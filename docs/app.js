@@ -298,8 +298,8 @@ function renderSankey(c) {
   const midNodes = sumBy(c2m, "target", col1Names);
   const rightNodes = sumBy(m2s, "target", col2Names);
 
-  const W = 680, H = 330, padY = 24, nodeW = 14, gap = 12;
-  const colX = [118, W / 2 - nodeW / 2, W - 132];
+  const W = 740, H = 340, padY = 24, nodeW = 14, gap = 14;
+  const colX = [156, W / 2 - nodeW / 2, W - 160];
 
   const layoutCol = (nodes, x) => {
     const total = nodes.reduce((s, n) => s + n.val, 0) || 1;

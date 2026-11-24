@@ -379,7 +379,12 @@ svg.chart-svg {
   gap: 9px;
   max-height: 380px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) var(--panel);
 }
+.swarm-list::-webkit-scrollbar { width: 6px; }
+.swarm-list::-webkit-scrollbar-track { background: var(--panel); }
+.swarm-list::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
 .swarm-row {
   background: var(--ground);
   border: 1px solid var(--line);
