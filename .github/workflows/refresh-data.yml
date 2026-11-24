@@ -1,0 +1,59 @@
+name: Refresh Taskmarket Snapshot
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore:
+      - 'docs/data/snapshot.json'
+      - 'docs/og-*.png'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-snapshot
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Setup Python for OG share cards
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Pillow
+        run: pip install --quiet pillow
+
+      - name: Fetch live Taskmarket API snapshot (Tempo 4217 & Base 8453)
+        run: node scripts/fetch_snapshot.mjs
+
+      - name: Verify snapshot integrity & schema
+        run: node scripts/verify_snapshot.mjs
+
+      - name: Regenerate brand-kit OG share cards
+        run: python3 scripts/generate_og.py
+
+      - name: Commit updated server-cached snapshot
+        run: |
+          git config user.name "taskmarket-pulse-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add docs/data/snapshot.json docs/og-*.png
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(data): refresh live market snapshot [skip ci]"
+            git push
+          else
+            echo "No snapshot changes."
+          fi
