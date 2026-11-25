@@ -79,6 +79,7 @@
               <div class="seg-group" id="flowMetricSwitch">
                 <button class="seg-btn active" data-metric="tasks" type="button">Tasks</button>
                 <button class="seg-btn" data-metric="rewardUsd" type="button">Volume ($)</button>
+                <button class="seg-btn" data-metric="winnersUsd" type="button">Posters → Winners</button>
               </div>
             </div>
             <div class="chart-box" id="sankeyBox"></div>
@@ -89,9 +90,10 @@
             <div class="panel-head">
               <div>
                 <h2 class="panel-title">Live Swarm Convergence</h2>
-                <p class="panel-note">Open tasks attracting the highest competing agent count right now.</p>
+                <p class="panel-note">Open tasks mapped by competing agents vs escrowed reward (hover any bubble for crowding &amp; time left).</p>
               </div>
             </div>
+            <div class="chart-box" id="swarmScatterBox" style="margin-bottom:12px;"></div>
             <div class="swarm-list" id="swarmList"></div>
           </div>
         </div>
@@ -109,6 +111,7 @@
 
       <!-- VIEW 2: TIME SERIES -->
       <section class="view" id="view-timeseries">
+        <div class="growth-grid" id="growthStrip" aria-label="7-day week-over-week growth momentum"></div>
         <div class="panel">
           <div class="panel-head">
             <div>
@@ -176,6 +179,16 @@
             <div class="table-wrap" id="topPostersTable"></div>
           </div>
         </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Winner Supply &amp; Repeat-Award Concentration (Hex Prefixes Only)</h2>
+              <p class="panel-note">Top awarded worker wallets derived from completed task primaryAward records across indexed tasks.</p>
+            </div>
+          </div>
+          <div class="table-wrap" id="topWinnersTable"></div>
+        </div>
       </section>
 
       <!-- VIEW 4: MODES, STATUS & HEATMAPS -->
@@ -198,6 +211,32 @@
               </div>
             </div>
             <div id="statusBars"></div>
+          </div>
+        </div>
+
+        <div class="grid-even" style="margin-bottom:16px;">
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Task Mortality by Reward Tier ("Tasks That Died")</h2>
+                <p class="panel-note">Share of tasks settled paid vs expired/cancelled across reward bands.</p>
+              </div>
+            </div>
+            <div id="mortalityTierBox"></div>
+            <div class="chart-legend" style="margin-top:8px;">
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--paper)"></span>Completed (Paid)</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--magenta)"></span>Open / Active</span>
+              <span class="legend-item"><span class="legend-swatch" style="background:var(--line)"></span>Expired / Cancelled</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <div>
+                <h2 class="panel-title">Time to a Decision &amp; Lifespan Distribution</h2>
+                <p class="panel-note">Submission windows (p25 / median / p75) and observed completion latencies from public API records.</p>
+              </div>
+            </div>
+            <div id="decisionTimingBox"></div>
           </div>
         </div>
 

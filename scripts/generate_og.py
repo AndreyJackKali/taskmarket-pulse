@@ -31,7 +31,6 @@ W, H = 1200, 630
 def make_canvas():
     img = Image.new("RGB", (W, H), GROUND)
     px = img.load()
-    # Soft top-left maroon glow fading cleanly into warm near-black ground
     for y in range(H):
         for x in range(W):
             d = ((x / 680.0) ** 2 + (y / 460.0) ** 2) ** 0.5
@@ -58,19 +57,16 @@ def load_fonts():
 
 
 def draw_header_footer(img, draw, fonts, as_of):
-    # Unmodified lockup top-left (30%+ of frame width = 360px wide)
     lockup = Image.open(LOCKUP_PATH).convert("RGBA")
     target_w = 340
     target_h = int(lockup.height * (target_w / lockup.width))
     lockup = lockup.resize((target_w, target_h), Image.Resampling.LANCZOS)
     img.paste(lockup, (64, 48), lockup)
 
-    # Address top-right in Departure Mono
     addr = "taskmarket.dev"
     bbox = draw.textbbox((0, 0), addr, font=fonts["mono_md"])
     draw.text((W - 64 - (bbox[2] - bbox[0]), 66), addr, font=fonts["mono_md"], fill=CREAM)
 
-    # Bottom metadata bar
     draw.line([(64, H - 68), (W - 64, H - 68)], fill=LINE, width=1)
     draw.text((64, H - 48), f"DATA AS OF {as_of[:16].replace('T', ' ')} UTC  ·  TEMPO (4217) & BASE (8453)", font=fonts["mono_sm"], fill=MUTED)
     note = "COMMUNITY BOUNTY VISUALIZER"
@@ -109,12 +105,20 @@ def render_card(out_name, prefix, accent_word, subtitle, cards, as_of, fonts):
     print(f"[og] wrote {out_path}")
 
 
+def fmt_delta(val):
+    if val is None:
+        return "n/a WoW"
+    sign = "+" if val >= 0 else ""
+    return f"{sign}{val:.1f}% WoW"
+
+
 def main():
     with open(SNAP_PATH) as f:
         snap = json.load(f)
     as_of = snap["dataAsOf"]
     t = snap["chains"]["tempo"]
     b = snap["chains"]["base"]
+    g = t.get("growth7d", {})
     fonts = load_fonts()
 
     # 1. Overview OG card (default og:image)
@@ -124,7 +128,7 @@ def main():
         "agents.",
         "Server-cached Tempo (OUSD) & Base (USDC) activity, capital flow, and poster concentration.",
         [
-            ("Active Agents (7d)", f"{t['headline'].get('activeAgents7d', 0):,}", "verified + open workers"),
+            ("Active Agents (7d)", f"{t['headline'].get('activeAgents7d', 0):,}", fmt_delta(g.get("agentsDeltaPct"))),
             ("Open Tasks Now", f"{t['headline'].get('openTasks', 0):,}", "live escrowed pools"),
             ("Paid Workers", f"{t['headline'].get('paidWorkers', 0) + b['headline'].get('paidWorkers', 0):,}", f"Tempo {t['headline'].get('paidWorkers',0)} · Base {b['headline'].get('paidWorkers',0)}"),
             ("Distinct Posters", f"{t['analytics']['distinctPostersTotal']:,}", f"Top 5 post {t['analytics']['top5SharePct']}% (Tempo)"),
@@ -137,48 +141,64 @@ def main():
     top_swarm = t["analytics"]["swarmConvergence"][0] if t["analytics"]["swarmConvergence"] else {"submissions": 0, "ref": "—"}
     render_card(
         "og-flow.png",
-        "Capital flow & swarm",
-        "convergence.",
-        "How OUSD and USDC move from poster cohorts through task modes into settled payouts.",
+        "Posters to winners &",
+        "swarm.",
+        "How OUSD and USDC move from poster cohorts through task modes into settled winner payouts.",
         [
             ("Tempo Completion", f"{t['analytics']['completionRatePct']}%", f"{t['analytics']['indexedTasksCount']:,} tasks indexed"),
             ("Task Mortality", f"{t['analytics']['mortalityRatePct']}%", "expired or cancelled"),
+            ("Distinct Winners", f"{t['analytics'].get('distinctWinnersTotal', 0):,}", f"Top 5 win {t['analytics'].get('top5WinnerSharePct', 0)}%"),
             ("Hottest Open Task", f"{top_swarm['submissions']} subs", f"{top_swarm['ref']} active swarm"),
-            ("Median Reward", f"${t['analytics']['medianRewardUsd']:.2f}", f"Tempo OUSD · Base ${b['analytics']['medianRewardUsd']:.2f}"),
         ],
         as_of,
         fonts,
     )
 
-    # 3. Posters & Concentration card
+    # 3. Posters & Winners card
     latest_wk = t["analytics"]["distinctPostersByWeek"][-1] if t["analytics"]["distinctPostersByWeek"] else {"distinctPosters": 0, "isoWeek": "—"}
     render_card(
         "og-posters.png",
-        "Distinct posters per",
-        "week.",
-        "Computed directly from /api/tasks across Tempo and Base — tracking supply concentration.",
+        "Posters, winners &",
+        "supply.",
+        "Computed directly from /api/tasks across Tempo and Base — tracking requester and winner concentration.",
         [
             ("Latest Week (Tempo)", f"{latest_wk['distinctPosters']}", f"ISO week {latest_wk['isoWeek']}"),
             ("Top 3 Poster Share", f"{t['analytics']['top3SharePct']}%", "of indexed Tempo tasks"),
-            ("Repeat Posters", f"{t['analytics']['repeatPosters']}", f"vs {t['analytics']['oneOffPosters']} one-off wallets"),
+            ("Repeat Winners", f"{t['analytics'].get('repeatWinners', 0)}", f"of {t['analytics'].get('distinctWinnersTotal', 0)} winners (Tempo)"),
             ("Base Distinct Posters", f"{b['analytics']['distinctPostersTotal']}", f"Top 5 post {b['analytics']['top5SharePct']}%"),
         ],
         as_of,
         fonts,
     )
 
-    # 4. Heatmap & Modes card
-    modes_t = {m["mode"]: m["count"] for m in t["breakdowns"].get("mode", [])}
+    # 4. Heatmap & Mortality card
+    dt = t["analytics"].get("decisionTiming", {})
     render_card(
         "og-heatmap.png",
-        "Activity rhythm by",
-        "mode.",
-        "30-day hour-of-week heatmaps and mode distributions across both Taskmarket chains.",
+        "Activity rhythm &",
+        "mortality.",
+        "30-day hour-of-week heatmaps, decision lifespans, and reward-tier mortality across both chains.",
         [
-            ("Bounty Tasks", f"{modes_t.get('bounty', 0):,}", "Tempo primary mode"),
-            ("Claim Tasks", f"{modes_t.get('claim', 0):,}", "single-worker reserve"),
-            ("Pitch + Benchmark", f"{modes_t.get('pitch', 0) + modes_t.get('benchmark', 0):,}", "competitive selection"),
+            ("Median Window", f"{dt.get('completedWindowMedianH', 0)}h", "completed Tempo tasks"),
+            ("Expired Window", f"{dt.get('deadWindowMedianH', 0)}h", "tasks that died"),
+            ("Tempo Mortality", f"{t['analytics']['mortalityRatePct']}%", f"vs Base {b['analytics']['mortalityRatePct']}%"),
             ("Active Wallets", f"{t['headline'].get('activeWallets', 0) + b['headline'].get('activeWallets', 0):,}", "Tempo + Base combined"),
+        ],
+        as_of,
+        fonts,
+    )
+
+    # 5. Time Series & 7d Growth Momentum card
+    render_card(
+        "og-timeseries.png",
+        "7-day velocity &",
+        "growth.",
+        "Comparing the last 7 complete UTC days against the prior 7-day window from platform time series.",
+        [
+            ("7d Tasks Posted", f"{g.get('tasksCur', 0):,}", fmt_delta(g.get("tasksDeltaPct"))),
+            ("7d Rewards Paid", f"${g.get('paidCurUsd', 0):,.0f}", fmt_delta(g.get("paidDeltaPct"))),
+            ("7d Escrowed Vol", f"${g.get('escrowedCurUsd', 0):,.0f}", fmt_delta(g.get("escrowedDeltaPct"))),
+            ("Avg Daily Agents", f"{g.get('avgAgentsCur', 0):.0f}", fmt_delta(g.get("agentsDeltaPct"))),
         ],
         as_of,
         fonts,

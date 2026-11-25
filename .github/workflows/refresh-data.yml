@@ -40,11 +40,14 @@ jobs:
       - name: Fetch live Taskmarket API snapshot (Tempo 4217 & Base 8453)
         run: node scripts/fetch_snapshot.mjs
 
-      - name: Verify snapshot integrity & schema
+      - name: Regenerate brand-kit OG share cards (5 views)
+        run: python3 scripts/generate_og.py
+
+      - name: Verify snapshot integrity, flow conservation & compliance rules
         run: node scripts/verify_snapshot.mjs
 
-      - name: Regenerate brand-kit OG share cards
-        run: python3 scripts/generate_og.py
+      - name: Run zero-dependency analytics & compliance tests
+        run: npm test
 
       - name: Commit updated server-cached snapshot
         run: |

@@ -1,6 +1,6 @@
 {
   "name": "taskmarket-pulse",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Public, server-cached live market visualizer for Taskmarket (Tempo 4217 & Base 8453)",
   "type": "module",
   "license": "MIT",
@@ -9,7 +9,8 @@
     "og": "python3 scripts/generate_og.py",
     "build": "node scripts/fetch_snapshot.mjs && python3 scripts/generate_og.py",
     "start": "node server.mjs",
-    "verify": "node scripts/verify_snapshot.mjs"
+    "verify": "node scripts/verify_snapshot.mjs",
+    "test": "node --test scripts/test_analytics.mjs"
   },
   "engines": {
     "node": ">=20.0.0"
