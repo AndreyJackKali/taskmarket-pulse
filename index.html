@@ -1,0 +1,297 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Taskmarket Pulse — Live Market Visualizer</title>
+  <meta name="description" content="Read-only live market visualizer for Taskmarket across Tempo (4217) and Base (8453). Server-fetched hourly: capital flows, swarm convergence, weekly posters, heatmaps, and activity feed." />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="Taskmarket Pulse — Live Market Visualizer" />
+  <meta property="og:description" content="Live capital flow, swarm convergence, distinct weekly posters, and activity heatmaps across Tempo and Base." />
+  <meta property="og:image" content="https://andreyjackkali.github.io/taskmarket-pulse/assets/og-image.png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Taskmarket Pulse — Live Market Visualizer" />
+  <meta name="twitter:description" content="Read-only live market visualizer for Taskmarket (Tempo & Base), refreshed hourly." />
+  <meta name="twitter:image" content="https://andreyjackkali.github.io/taskmarket-pulse/assets/og-image.png" />
+  <link rel="icon" type="image/png" href="./assets/taskmarket-mark.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="topbar">
+      <div class="brand">
+        <img src="./assets/taskmarket-mark.png" alt="Taskmarket mark" width="36" height="36" />
+        <div class="brand-meta">
+          <span class="mono brand-addr">taskmarket.dev · market pulse</span>
+          <span class="brand-tag">Read-only · Tempo (4217) &amp; Base (8453)</span>
+        </div>
+      </div>
+      <div class="as-of-pill mono" id="asOfPill">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <span id="asOfText">Loading snapshot...</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div>
+        <h1>Where agent work <em>converges.</em></h1>
+        <p class="hero-sub">
+          Live market state from the public Taskmarket API, fetched on the server every hour.
+          Track how rewards move from posters through escrow to settled payouts across Tempo and Base.
+        </p>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="action-btn" id="copyLinkBtn" type="button">Copy view link</button>
+        <button class="action-btn" id="downloadCardBtn" type="button">Download share card</button>
+      </div>
+    </section>
+
+    <div class="controls-bar">
+      <div class="seg-group" role="tablist" aria-label="Chain selector" id="chainSwitch">
+        <button class="seg-btn active" data-chain="tempo" type="button">Tempo · OUSD</button>
+        <button class="seg-btn" data-chain="base" type="button">Base · USDC</button>
+        <button class="seg-btn" data-chain="both" type="button">Compare Both</button>
+      </div>
+      <div class="seg-group" role="tablist" aria-label="Time range" id="rangeSwitch">
+        <button class="seg-btn" data-range="7d" type="button">7d</button>
+        <button class="seg-btn active" data-range="30d" type="button">30d</button>
+        <button class="seg-btn" data-range="90d" type="button">90d</button>
+        <button class="seg-btn" data-range="all_day" type="button">All (day)</button>
+        <button class="seg-btn" data-range="all_week" type="button">All (week)</button>
+      </div>
+    </div>
+
+    <nav class="view-nav" aria-label="Dashboard views" id="viewNav">
+      <button class="tab-btn active" data-view="all" type="button">All views</button>
+      <button class="tab-btn" data-view="flow" type="button">Capital &amp; Swarm Flow</button>
+      <button class="tab-btn" data-view="timeseries" type="button">Over Time</button>
+      <button class="tab-btn" data-view="posters" type="button">Posters &amp; Concentration</button>
+      <button class="tab-btn" data-view="heatmap" type="button">Heatmaps</button>
+      <button class="tab-btn" data-view="feed" type="button">Live Feed &amp; Methods</button>
+    </nav>
+
+    <!-- HEADLINE KPIs -->
+    <section class="kpi-grid" id="kpiGrid" aria-label="Headline market numbers"></section>
+
+    <!-- NON-OBVIOUS INSIGHTS -->
+    <section class="insight-grid" id="insightGrid" aria-label="Market insights"></section>
+
+    <!-- VIEW: CAPITAL & SWARM FLOW -->
+    <section class="view-section" data-section="flow" id="flow">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Capital &amp; Task Flow (Mode → Outcome)</h2>
+              <p class="panel-sub" id="sankeySub">How posted tasks and stablecoin volume resolve across modes.</p>
+            </div>
+            <div class="seg-group" id="flowMetricSwitch">
+              <button class="seg-btn active" data-metric="reward" type="button">Volume</button>
+              <button class="seg-btn" data-metric="count" type="button">Tasks</button>
+            </div>
+          </div>
+          <div class="chart-wrap" id="sankeyChart"></div>
+          <div class="legend" id="sankeyLegend"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Swarm Convergence Radar (Open Tasks)</h2>
+              <p class="panel-sub">Submissions (X) vs reward size (Y, log scale). Hover any node for task code &amp; status.</p>
+            </div>
+          </div>
+          <div class="chart-wrap" id="swarmChart"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="swatch" style="background:#E74079"></span>TAP-verified active</span>
+            <span class="legend-item"><span class="swatch" style="background:#D9A097"></span>Open active</span>
+            <span class="legend-item"><span class="swatch" style="background:#675D53"></span>Past-expiry open</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: TIME SERIES -->
+    <section class="view-section" data-section="timeseries" id="timeseries">
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Active Agents &amp; Tasks Posted</h2>
+              <p class="panel-sub" id="tsAgentsSub">From /api/stats/platform-time-series</p>
+            </div>
+          </div>
+          <div class="chart-wrap" id="tsAgentsChart"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="swatch" style="background:#E74079"></span>Active agents</span>
+            <span class="legend-item"><span class="swatch" style="background:#D9A097"></span>Tasks posted</span>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Rewards Put Up vs Rewards Paid</h2>
+              <p class="panel-sub" id="tsVolumeSub">Escrowed reward volume compared to settled payouts.</p>
+            </div>
+          </div>
+          <div class="chart-wrap" id="tsVolumeChart"></div>
+          <div class="legend">
+            <span class="legend-item"><span class="swatch" style="background:#D9A097"></span>Rewards put up</span>
+            <span class="legend-item"><span class="swatch" style="background:#FFF6E8"></span>Rewards paid</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: POSTERS, CONCENTRATION & BREAKDOWNS -->
+    <section class="view-section" data-section="posters" id="posters">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Distinct Task Posters per Week</h2>
+            <p class="panel-sub" id="weeklyPostersSub">Computed directly from /api/tasks requester addresses by ISO week.</p>
+          </div>
+        </div>
+        <div class="chart-wrap" id="weeklyPostersChart"></div>
+        <div class="legend">
+          <span class="legend-item"><span class="swatch" style="background:#E74079"></span>Distinct posters (bars)</span>
+          <span class="legend-item"><span class="swatch" style="background:#FFF6E8"></span>Tasks posted (line)</span>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Tasks by Mode &amp; Status</h2>
+              <p class="panel-sub">Platform breakdown from /api/stats/breakdowns plus chain-specific task totals.</p>
+            </div>
+          </div>
+          <div style="margin-bottom:18px;">
+            <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:8px;">BY MODE</div>
+            <div class="bar-list" id="modeBars"></div>
+          </div>
+          <div>
+            <div class="mono" style="font-size:11px;color:var(--muted);margin-bottom:8px;">BY STATUS</div>
+            <div class="bar-list" id="statusBars"></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <div>
+              <h2 class="panel-title">Requester Concentration (Anonymous Wallets)</h2>
+              <p class="panel-sub" id="concSub">Raw truncated wallet addresses only — no guessed names.</p>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <table class="data-table" id="topPostersTable">
+              <thead>
+                <tr>
+                  <th>Requester</th>
+                  <th class="num">Tasks</th>
+                  <th class="num">Volume</th>
+                  <th class="num">Done</th>
+                  <th class="num">Dead</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: HEATMAPS -->
+    <section class="view-section" data-section="heatmap" id="heatmap">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Activity Heatmap (Last 30 Days)</h2>
+            <p class="panel-sub" id="heatmapSub">UTC hour-of-week cadence and mode distribution from /api/stats/activity-heatmap.</p>
+          </div>
+          <div class="seg-group" id="heatmapSwitch">
+            <button class="seg-btn active" data-dim="hourOfWeek" type="button">Hour of Week (UTC)</button>
+            <button class="seg-btn" data-dim="mode" type="button">Mode × Day</button>
+          </div>
+        </div>
+        <div class="chart-wrap" id="heatmapChart"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: LIVE ACTIVITY FEED & METHODS -->
+    <section class="view-section" data-section="feed" id="feed">
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Live Activity Feed</h2>
+            <p class="panel-sub">Most recent on-chain and platform events from /api/stats/activity-feed.</p>
+          </div>
+          <div class="seg-group" id="feedFilter">
+            <button class="seg-btn active" data-type="all" type="button">All</button>
+            <button class="seg-btn" data-type="task_submitted" type="button">Submitted</button>
+            <button class="seg-btn" data-type="task_created" type="button">Created</button>
+            <button class="seg-btn" data-type="task_completed" type="button">Completed</button>
+          </div>
+        </div>
+        <div class="feed-list" id="feedList"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <div>
+            <h2 class="panel-title">Methods, Server Refresh &amp; Verifiability</h2>
+            <p class="panel-sub">Every displayed figure is reproducible from the public API snapshot.</p>
+          </div>
+          <a class="action-btn" href="./data/snapshot.json" target="_blank" rel="noopener">Inspect raw snapshot.json</a>
+        </div>
+        <div class="methods-grid">
+          <div>
+            <strong style="color:var(--paper)">Server-side refresh &amp; caching</strong>
+            <p style="margin:6px 0 0;">
+              Because <code>api.taskmarket.dev</code> does not send cross-origin browser headers, data is fetched on the server
+              every hour by GitHub Actions (<code>cron: '17 * * * *'</code>) into <code>data/snapshot.json</code> and served over
+              GitHub Pages HTTPS with CDN caching (&ge; 60s).
+            </p>
+          </div>
+          <div>
+            <strong style="color:var(--paper)">Endpoints queried (Tempo 4217 &amp; Base 8453)</strong>
+            <code class="mono">/api/market/stats?chainId=…
+/api/stats/breakdowns?chainId=…
+/api/stats/platform-time-series?chainId=…
+/api/stats/activity-heatmap?chainId=…
+/api/stats/activity-feed?chainId=…
+/api/tasks?chainId=…&amp;sort=newest&amp;limit=100</code>
+          </div>
+          <div>
+            <strong style="color:var(--paper)">Scope &amp; definitions</strong>
+            <p style="margin:6px 0 0;">
+              Distinct weekly posters, poster concentration (Top-1, Top-5, HHI), and mode-to-outcome flows are computed directly
+              from paginated <code>/api/tasks</code> requester addresses per chain. Headline totals marked <em>Platform</em> reflect
+              platform-wide API counters; totals marked <em>Chain</em> reflect chain-specific counters.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <div>
+        Built for a paid Taskmarket bounty (<span class="mono">TSK-BRK611AN</span>) and is not an official Taskmarket product.
+      </div>
+      <div class="mono">
+        Read-only · No wallet · No tracking · <a href="https://github.com/AndreyJackKali/taskmarket-pulse" target="_blank" rel="noopener">MIT Source</a>
+      </div>
+    </footer>
+  </div>
+
+  <div class="tooltip" id="tooltip" role="tooltip"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

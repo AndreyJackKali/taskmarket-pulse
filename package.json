@@ -1,0 +1,13 @@
+{
+  "name": "taskmarket-pulse",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Read-only live market visualizer for Taskmarket (Tempo 4217 & Base 8453), refreshed hourly on the server.",
+  "license": "MIT",
+  "scripts": {
+    "refresh": "node scripts/fetch-market-data.mjs && node scripts/generate-og.mjs",
+    "serve": "npx --yes serve -l 3000 .",
+    "dev": "npm run refresh && npm run serve"
+  }
+}

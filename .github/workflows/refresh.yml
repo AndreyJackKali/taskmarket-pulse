@@ -1,0 +1,61 @@
+name: Refresh Taskmarket Snapshot & Deploy Pages
+
+on:
+  schedule:
+    # Refresh server-side snapshot every hour at minute 17
+    - cron: '17 * * * *'
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-refresh
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Fetch live Taskmarket API data (Tempo 4217 & Base 8453)
+        run: node scripts/fetch-market-data.mjs
+
+      - name: Regenerate SVG share cards
+        run: node scripts/generate-og.mjs
+
+      - name: Commit fresh snapshot if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/snapshot.json assets/share-*.svg
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(data): hourly Taskmarket snapshot refresh"
+            git push
+          fi
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload static site artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
