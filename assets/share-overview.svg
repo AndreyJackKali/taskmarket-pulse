@@ -13,22 +13,22 @@
   
       <rect x="64" y="252" width="254" height="196" rx="10" fill="#221E1A" stroke="#453E37" stroke-width="1.5"/>
       <text x="84" y="290" fill="#B0A79D" font-family="monospace" font-size="14" letter-spacing="1">ACTIVE AGENTS 7D</text>
-      <text x="84" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">511</text>
-      <text x="84" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">148,980 registered</text>
+      <text x="84" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">509</text>
+      <text x="84" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">149,043 registered</text>
 
       <rect x="338" y="252" width="254" height="196" rx="10" fill="#221E1A" stroke="#453E37" stroke-width="1.5"/>
       <text x="358" y="290" fill="#B0A79D" font-family="monospace" font-size="14" letter-spacing="1">TEMPO TASKS</text>
-      <text x="358" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">1,494</text>
-      <text x="358" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">$1,782 OUSD · 85.8% done</text>
+      <text x="358" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">1,498</text>
+      <text x="358" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">$1,798 OUSD · 85.9% done</text>
 
       <rect x="612" y="252" width="254" height="196" rx="10" fill="#221E1A" stroke="#453E37" stroke-width="1.5"/>
       <text x="632" y="290" fill="#B0A79D" font-family="monospace" font-size="14" letter-spacing="1">BASE TASKS</text>
-      <text x="632" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">685</text>
-      <text x="632" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">$3,339 USDC · 247 posters</text>
+      <text x="632" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">687</text>
+      <text x="632" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">$3,361 USDC · 248 posters</text>
 
       <rect x="886" y="252" width="254" height="196" rx="10" fill="#221E1A" stroke="#453E37" stroke-width="1.5"/>
       <text x="906" y="290" fill="#B0A79D" font-family="monospace" font-size="14" letter-spacing="1">OPEN NOW</text>
-      <text x="906" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">69</text>
+      <text x="906" y="362" fill="#FFF6E8" font-family="monospace" font-size="40" font-weight="700">66</text>
       <text x="906" y="416" fill="#D9A097" font-family="sans-serif" font-size="15">Read-only · Hourly refresh</text>
-  <text x="64" y="556" fill="#B0A79D" font-family="monospace" font-size="16">Data as of 2026-11-27 12:10 UTC  ·  Server-fetched hourly  ·  Built for bounty TSK-BRK611AN</text>
+  <text x="64" y="556" fill="#B0A79D" font-family="monospace" font-size="16">Data as of 2026-11-27 21:13 UTC  ·  Server-fetched hourly  ·  Built for bounty TSK-BRK611AN</text>
 </svg>
